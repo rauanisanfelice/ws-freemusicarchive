@@ -4,13 +4,14 @@ from bs4 import BeautifulSoup
 from math import ceil
 from json import dump, load
 from datetime import datetime
-from os import walk
 from threading import Thread
 from time import sleep
+from utils import ListFiles, CheckHealth
 
 
 TIMEOUT = 5
 PATH = "./json/" 
+
 
 
 def main():
@@ -48,16 +49,6 @@ def main():
     print(f"GET ALL LICENSES: {GENRE.upper()} - Time: {str(datetime.now()  - start_time)}")
     
 
-def check_health(url:str) -> bool:
-    
-    status_code_health = requests.get(url, timeout=TIMEOUT).status_code
-    if status_code_health != 200:
-        print("Erro pagina nao existe: ", url)
-        print(status_code_health)
-        return False
-    return True
-
-
 def ws_list_all_tracks_per_genre(GENRE:str) -> list:
 
     TOTAL_TRACKS_IN_PAGE = 0
@@ -67,11 +58,11 @@ def ws_list_all_tracks_per_genre(GENRE:str) -> list:
     URL = f"https://freemusicarchive.org/genre/{GENRE}?sort={SORT}&d=0&pageSize={PAGE_SIZE}&page={PAGE_BEGIN}"
 
     # CHECK HEALTH PAGE
-    if not check_health(URL):
+    if not CheckHealth(URL):
         return False
 
     # BUSCA TOTAL DE MUSICAS
-    html = requests.get(URL, timeout=5).content
+    html = requests.get(URL, timeout=TIMEOUT).content
     soup = BeautifulSoup(html, "html.parser", from_encoding="utf-8")
 
     info = soup.find("div", "pagination-full").find("span", "lf").find_all("b")
@@ -85,7 +76,7 @@ def ws_list_all_tracks_per_genre(GENRE:str) -> list:
         
         start_time = datetime.now()
         URL = f"https://freemusicarchive.org/genre/{GENRE}?sort={SORT}&d=0&pageSize={PAGE_SIZE}&page={page_index}"
-        if not check_health(URL):
+        if not CheckHealth(URL):
             continue
         
         # WEB SCRAPING
@@ -106,7 +97,7 @@ def ws_info_track(url:str) -> list:
     try:
         
         tracks = []
-        html = requests.get(url, timeout=10).content
+        html = requests.get(url, timeout=TIMEOUT).content
         soup = BeautifulSoup(html, "html.parser", from_encoding="utf-8")
         playlist = soup.find("div", class_="playlist")
 
@@ -167,24 +158,6 @@ def ws_info_track(url:str) -> list:
         return None
 
 
-def ListFiles(path: str) -> list:
-    """
-    Function that get all files in path
-    
-    param:
-        * path
-
-    return:
-        * listFiles(list) 
-    """
-
-    listFiles = []
-    for (dirpath, dirnames, filenames) in walk(path):
-        return filenames
-
-    return None
-
-
 def get_all_genres() -> bool:
     
     try:
@@ -231,14 +204,14 @@ def get_licenses() -> bool:
                     print(f'Buscando licença: {link["index"] + 1}/{len(list_all_track_url)}') 
 
                     # CHECK HEALTH PAGE
-                    if not check_health(link["Track_url"]):
+                    if not CheckHealth(link["Track_url"]):
                         data[link["index"]]["License"] = None
                         with open(f'{PATH}{fileJSON}', "w", encoding="utf-8") as json_file:
                             dump(data, json_file, indent=4, ensure_ascii=False)
                         continue
                     
                     # BUSCA LICENSE
-                    html = requests.get(link["Track_url"], timeout=5).content
+                    html = requests.get(link["Track_url"], timeout=TIMEOUT).content
                     soup = BeautifulSoup(html, "html.parser", from_encoding="utf-8")
 
                     if soup.find("div", "box-stnd-nobord") is None:
