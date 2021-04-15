@@ -2,6 +2,13 @@
 
 Script que realiza Web Scraping do site Free Music Archive que retorna lista por genero e busca as licenças desta lista, também possui um script que retorna um reusmo quantidade de musicas por tipo de Licença.
 
+## Instruções
+
+1. Python;
+2. Requirements;
+3. Estrutura de pastas;
+4. Execute;
+
 ## Python
 
 ```bash
