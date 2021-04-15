@@ -17,26 +17,10 @@ PATH = "./json/"
 def main():
 
     start_time = datetime.now()
-    
-    GENRE="Jazz"
+
+    GENRE="Blues"
     ws_list_all_tracks_per_genre(GENRE=GENRE)
     print(f"GENRE: {GENRE.upper()} - Time: {str(datetime.now()  - start_time)}")
-
-    # GENRE="Blues"
-    # ws_list_all_tracks_per_genre(GENRE=GENRE)
-    # print(f"GENRE: {GENRE.upper()} - Time: {str(datetime.now()  - start_time)}")
-    
-    # GENRE="Folk"
-    # ws_list_all_tracks_per_genre(GENRE=GENRE)
-    # print(f"GENRE: {GENRE.upper()} - Time: {str(datetime.now()  - start_time)}")
-
-    # GENRE="Electronic"
-    # ws_list_all_tracks_per_genre(GENRE=GENRE)
-    # print(f"GENRE: {GENRE.upper()} - Time: {str(datetime.now()  - start_time)}")
-    
-    # GENRE="House"
-    # ws_list_all_tracks_per_genre(GENRE=GENRE)
-    # print(f"GENRE: {GENRE.upper()} - Time: {str(datetime.now()  - start_time)}")
 
     # BUSCA TODOS OS GENEROS
     if not get_all_genres():
@@ -50,6 +34,14 @@ def main():
     
 
 def ws_list_all_tracks_per_genre(GENRE:str) -> list:
+    """Web Scraping get all tracks per genres
+
+    Args:
+        GENRE (str): Jazz, Blues, Folk...
+
+    Returns:
+        list: List of all tracks per genres
+    """
 
     TOTAL_TRACKS_IN_PAGE = 0
     PAGE_SIZE = 100
@@ -93,7 +85,15 @@ def ws_list_all_tracks_per_genre(GENRE:str) -> list:
 
 
 def ws_info_track(url:str) -> list:
-    
+    """Get infos of track
+
+    Args:
+        url (str): Url of the track
+
+    Returns:
+        list: Info list of track.
+    """
+
     try:
         
         tracks = []
@@ -159,7 +159,14 @@ def ws_info_track(url:str) -> list:
 
 
 def get_all_genres() -> bool:
-    
+    """Get all genres find in the list of tracks
+
+    Returns:
+        bool:
+            True: success
+            False: error
+    """
+
     try:
     
         get_all_genres = lambda x: x["Genres"]
@@ -167,7 +174,7 @@ def get_all_genres() -> bool:
 
         files = ListFiles(PATH)
         for fileJSON in files:
-            if fileJSON.find("GENRES") == -1:
+            if fileJSON.find("GENRES") == -1 and fileJSON.find("INFO_LICENSES") == -1:
                 with open(f'{PATH}{fileJSON}') as json_file:
                     data = load(json_file)
                     all_genres_list = list(map(get_all_genres, data))
@@ -186,7 +193,14 @@ def get_all_genres() -> bool:
 
 
 def get_licenses() -> bool:
-    
+    """Get all types of licenses
+
+    Returns:
+        bool:
+            True: success
+            False: error
+    """
+
     try:
     
         get_all_trak_url = lambda x: { "Track_url": x["Track_url"], "index": data.index(x)}
@@ -194,7 +208,7 @@ def get_licenses() -> bool:
 
         files = ListFiles(PATH)
         for fileJSON in files:
-            if fileJSON.find("GENRES") == -1:
+            if fileJSON.find("GENRES") == -1 and fileJSON.find("INFO_LICENSES") == -1:
                 with open(f'{PATH}{fileJSON}', "r") as json_file:
                     data = load(json_file)
                     list_all_track_url = list(map(get_all_trak_url, data))
@@ -211,7 +225,7 @@ def get_licenses() -> bool:
                         continue
                     
                     # BUSCA LICENSE
-                    html = requests.get(link["Track_url"], timeout=TIMEOUT).content
+                    html = requests.get(link["Track_url"], timeout=TIMEOUT+5).content
                     soup = BeautifulSoup(html, "html.parser", from_encoding="utf-8")
 
                     if soup.find("div", "box-stnd-nobord") is None:
