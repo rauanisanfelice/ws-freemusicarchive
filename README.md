@@ -1,6 +1,6 @@
 # ws-freemusicarchive
 
-Weeb Scraping Free Music Archive
+Script que realiza Web Scraping do site Free Music Archive que retorna lista por genero e busca as licenças desta lista, também possui um script que retorna um reusmo quantidade de musicas por tipo de Licença.
 
 ## Python
 
